@@ -1,12 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, Eye, Package } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { formatCurrency } from '../../utils';
+import { Edit, Eye, Filter, Package, Plus, Search, Trash2 } from 'lucide-react';
+import { AnimatePresence, motion, } from 'motion/react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { api } from 'convex/_generated/api';
 import { useMutation } from 'convex/react';
+import { formatCurrency } from '../../utils';
 
 export const Route = createFileRoute('/products/')({
   component: RouteComponent,

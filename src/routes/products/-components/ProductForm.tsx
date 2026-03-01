@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { X, Plus, Image as ImageIcon, Upload } from 'lucide-react';
-import { type Product } from '../-types';
+import { Image as ImageIcon, Plus, Upload, X } from 'lucide-react';
+import { api } from 'convex/_generated/api';
+import { useMutation } from 'convex/react';
 import { cn } from '../../../utils';
+import type { Product } from '../-types';
 import type { Id } from 'convex/_generated/dataModel';
 
 interface ProductFormProps {
@@ -35,6 +37,10 @@ export default function ProductForm({ initialData, onSubmit, title }: ProductFor
 
     const [tagInput, setTagInput] = useState('');
     const [imageInput, setImageInput] = useState('');
+
+
+    const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+    const getStorageUrl = useMutation(api.files.getStorageUrl)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -99,26 +105,34 @@ export default function ProductForm({ initialData, onSubmit, title }: ProductFor
         const formData = new FormData();
         formData.append('image', file);
 
-        // try {
-        //     const res = await fetch('/api/upload', {
-        //         method: 'POST',
-        //         body: formData,
-        //     });
-        //     const data = await res.json();
-        //     if (data.url) {
-        //         setFormData(prev => ({
-        //             ...prev,
-        //             images: [...(prev.images || []), data.url],
-        //             imageUrl: prev.imageUrl || data.url
-        //         }));
-        //     }
-        // } catch (error) {
-        //     console.error('Error uploading file:', error);
-        //     alert('Failed to upload image. Please try again.');
-        // } finally {
-        //     setUploading(false);
-        //     if (fileInputRef.current) fileInputRef.current.value = '';
-        // }
+        try {
+            const uploadUrl = await generateUploadUrl()
+
+            const response = await fetch(uploadUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": file.type
+                },
+                body: file
+            })
+
+            const { storageId } = await response.json()
+
+            const url = await getStorageUrl({ id: storageId })
+
+            if (url) setFormData(prev => ({
+                ...prev,
+                images: [...(prev.images || []), url],
+                imageUrl: prev.imageUrl || url
+            }));
+
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Failed to upload image. Please try again.');
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
     };
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -204,7 +218,7 @@ export default function ProductForm({ initialData, onSubmit, title }: ProductFor
                                     required
                                     min="0"
                                     step="0.01"
-                                    value={formData.price ?? ''}
+                                    value={formData.price || ''}
                                     onChange={handleChange}
                                     className="input-field"
                                 />
@@ -229,7 +243,7 @@ export default function ProductForm({ initialData, onSubmit, title }: ProductFor
                                 name="quantity"
                                 required
                                 min="0"
-                                value={formData.quantity ?? ''}
+                                value={formData.quantity || ''}
                                 onChange={handleChange}
                                 className="input-field"
                             />

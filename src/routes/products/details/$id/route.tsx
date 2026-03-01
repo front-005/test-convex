@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { ChevronLeft, Edit, Trash2, Star, Package, Check, AlertCircle, Tag } from 'lucide-react';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { AlertCircle, Check, ChevronLeft, Edit, Package, Star, Tag, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { formatCurrency, cn } from '../../../../utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { api } from 'convex/_generated/api';
-import type { Id } from 'convex/_generated/dataModel';
 import { useMutation } from 'convex/react';
+import { cn, formatCurrency } from '../../../../utils';
+import type { Id } from 'convex/_generated/dataModel';
 
 export const Route = createFileRoute('/products/details/$id')({
     component: RouteComponent,
@@ -177,7 +177,10 @@ function RouteComponent() {
                             <span>Edit Product</span>
                         </Link>
                         <button
-                            onClick={() => handleDelete({ id: product._id })}
+                            onClick={() => {
+                                handleDelete({ id: product._id });
+                                navigate({ to: '/products' })
+                            }}
                             className="btn-secondary px-6 flex items-center justify-center text-red-500 border-red-100 hover:bg-red-50"
                         >
                             <Trash2 size={20} />
